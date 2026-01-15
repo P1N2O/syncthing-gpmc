@@ -1,0 +1,38 @@
+services:
+  syncthing:
+    container_name: syncthing
+    image: linuxserver/syncthing
+    hostname: pi #optional
+    environment:
+      - PUID=1000
+      - PGID=1003
+      - TZ=Asia/Kolkata
+    volumes:
+      - ./config:/config
+      - /home/pinto/sync:/sync
+    ports:
+      - 8005:8384 #WebUI
+      - 22000:22000/tcp #Listening port (TCP)
+      - 22000:22000/udp #Listening port (UDP)
+      - 21027:21027/udp #Protocol discovery
+    restart: unless-stopped
+
+  syncthing-gpmc:
+    image: syncthing-gpmc:latest
+    build: .
+    container_name: syncthing-gpmc
+    environment:
+      - PUID=1000
+      - PGID=1003
+      - THREADS=4
+      - SYNC_INTERVAL=3600 # sync every hour
+      - GP_AUTH_DATA=your_auth_data_here
+    volumes:
+      - ./config/gpmc:/root/.config/gpmc
+      - /home/pinto/sync:/watch
+    restart: unless-stopped
+
+networks:
+  default:
+      name: cloudflare
+      external: true
